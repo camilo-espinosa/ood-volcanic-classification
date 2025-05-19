@@ -23,7 +23,7 @@ The full dataset used in the study, including:
 
 is available via Zenodo:
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15460140.svg)](https://doi.org/10.5281/zenodo.15460140)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15461242.svg)](https://doi.org/10.5281/zenodo.15461242)
 
 ## Installation
 

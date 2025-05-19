@@ -22,30 +22,24 @@ def download_file_with_progress(url, output_path, desc="Downloading"):
             bar.update(len(data))
 
 
-def model_selector(select_pretrained="rep_1"):
+def model_selector(select_pretrained="rep1"):
     doi = "10.5281/zenodo.15460140"
     record_id = doi.split(".")[-1]
     metadata_url = f"https://zenodo.org/api/records/{record_id}"
     response = requests.get(metadata_url)
     metadata = response.json()
     files = metadata["files"]
-    if select_pretrained == "rep_1":
-        OOD_file = files[1]
-        weights_file = files[6]
-    if select_pretrained == "rep_2":
-        OOD_file = files[2]
-        weights_file = files[5]
-    if select_pretrained == "rep_3":
-        OOD_file = files[3]
-        weights_file = files[7]
-    if select_pretrained == "rep_4":
-        OOD_file = files[4]
-        weights_file = files[8]
 
-    OOD_url = OOD_file["links"]["self"]
-    weight_url = weights_file["links"]["self"]
-    OOD_path = OOD_file["key"]
-    weights_path = weights_file["key"]
+    keys = [[idx, file["key"]] for idx, file in enumerate(files)]
+    selected_files = [[key[0], key[1]] for key in keys if select_pretrained in key[1]]
+    OOD_file = [[file[0], file[1]] for file in selected_files if "OOD" in file[1]][0]
+    weights_file = [
+        [file[0], file[1]] for file in selected_files if "model" in file[1]
+    ][0]
+    OOD_url = files[OOD_file[0]]["links"]["self"]
+    weight_url = files[weights_file[0]]["links"]["self"]
+    OOD_path = OOD_file[1]
+    weights_path = weights_file[1]
 
     if os.path.exists(weights_path):
         print(f"Weights already downloaded at {weights_path}")
