@@ -64,31 +64,21 @@ def model_selector(select_pretrained="rep_1"):
     print(f"Loading weights and OOD detector...")
 
     device = "cuda" if torch.cuda.is_available() == True else "cpu"
-    if select_pretrained != "rep_1":
-        model_torch = vgg16_bn(weights=None)
-        model_torch.classifier[6] = torch.nn.Linear(
-            in_features=4096, out_features=3, bias=True
-        )  # VGG16
-        new_feats_list = []
-        for layer in model_torch.features:
-            new_feats_list.append(layer)
-            if isinstance(layer, torch.nn.Conv2d):
-                new_feats_list.append(torch.nn.Dropout(p=0.3))
-        model_torch.features = torch.nn.Sequential(*new_feats_list)
-        model_torch.classifier.add_module("7", torch.nn.Softmax(dim=1))
 
-        state = torch.load(weights_path, weights_only=False)
-        model_torch.load_state_dict(state["model_state_dict"])
+    model_torch = vgg16_bn(weights=None)
+    model_torch.classifier[6] = torch.nn.Linear(
+        in_features=4096, out_features=3, bias=True
+    )  # VGG16
+    new_feats_list = []
+    for layer in model_torch.features:
+        new_feats_list.append(layer)
+        if isinstance(layer, torch.nn.Conv2d):
+            new_feats_list.append(torch.nn.Dropout(p=0.3))
+    model_torch.features = torch.nn.Sequential(*new_feats_list)
+    model_torch.classifier.add_module("7", torch.nn.Softmax(dim=1))
 
-    else:
-        model_torch = vgg16_bn(weights=None)
-        model_torch.classifier[6] = torch.nn.Linear(
-            in_features=4096, out_features=3, bias=True
-        )  # VGG16
-        model_torch.classifier.add_module("7", torch.nn.Softmax(dim=1))
-
-        state = torch.load(weights_path, weights_only=False)
-        model_torch.load_state_dict(state["model_state_dict"])
+    state = torch.load(weights_path, weights_only=False)
+    model_torch.load_state_dict(state["model_state_dict"])
 
     print(f"Model weigths successfully loaded...")
     with open(OOD_path, "rb") as f:
