@@ -23,7 +23,7 @@ def download_file_with_progress(url, output_path, desc="Downloading"):
 
 
 def model_selector(select_pretrained="rep1"):
-    doi = "10.5281/zenodo.15460140"
+    doi = "10.5281/zenodo.15461242"
     record_id = doi.split(".")[-1]
     metadata_url = f"https://zenodo.org/api/records/{record_id}"
     response = requests.get(metadata_url)
