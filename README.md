@@ -2,7 +2,7 @@
 
 This repository contains the code implementation for the article:
 
-**"Improved Non-Volcanic Event Detection at Nevados del Chillán Volcanic Complex Using Combined Domain Representations in a Single Input"**  
+**"Volcano Seismic Event Recognition and OOD Detection Using Multi-Representation Deep Learning: Insights from Nevados del Chillán"**  
 *(Currently under review)*
 
 ## Overview
