@@ -4,6 +4,7 @@ import requests
 import os
 from cleanlab.outlier import OutOfDistribution
 import pickle as pkl
+import gc
 
 from tqdm.notebook import tqdm
 
@@ -22,38 +23,45 @@ def download_file_with_progress(url, output_path, desc="Downloading"):
             bar.update(len(data))
 
 
-def model_selector(select_pretrained="rep1"):
-    doi = "10.5281/zenodo.15461242"
-    record_id = doi.split(".")[-1]
-    metadata_url = f"https://zenodo.org/api/records/{record_id}"
-    response = requests.get(metadata_url)
-    metadata = response.json()
-    files = metadata["files"]
+def model_selector(
+    select_pretrained="rep1", with_OOD=False, weights_path=None, OOD_path=None
+):
+    if not weights_path:
+        doi = "10.5281/zenodo.15461242"
+        record_id = doi.split(".")[-1]
+        metadata_url = f"https://zenodo.org/api/records/{record_id}"
+        response = requests.get(metadata_url)
+        metadata = response.json()
+        files = metadata["files"]
 
-    keys = [[idx, file["key"]] for idx, file in enumerate(files)]
-    selected_files = [[key[0], key[1]] for key in keys if select_pretrained in key[1]]
-    OOD_file = [[file[0], file[1]] for file in selected_files if "OOD" in file[1]][0]
-    weights_file = [
-        [file[0], file[1]] for file in selected_files if "model" in file[1]
-    ][0]
-    OOD_url = files[OOD_file[0]]["links"]["self"]
-    weight_url = files[weights_file[0]]["links"]["self"]
-    OOD_path = OOD_file[1]
-    weights_path = weights_file[1]
+        keys = [[idx, file["key"]] for idx, file in enumerate(files)]
+        selected_files = [
+            [key[0], key[1]] for key in keys if select_pretrained in key[1]
+        ]
+        OOD_file = [[file[0], file[1]] for file in selected_files if "OOD" in file[1]][
+            0
+        ]
+        weights_file = [
+            [file[0], file[1]] for file in selected_files if "model" in file[1]
+        ][0]
+        OOD_url = files[OOD_file[0]]["links"]["self"]
+        weight_url = files[weights_file[0]]["links"]["self"]
+        OOD_path = OOD_file[1]
+        weights_path = weights_file[1]
 
-    if os.path.exists(weights_path):
-        print(f"Weights already downloaded at {weights_path}")
-    else:
-        print(f"Downloading weights from {doi}...")
-        download_file_with_progress(weight_url, weights_path, desc="Weights")
-        print(f"Downloaded weights at {weights_path}")
+        if os.path.exists(weights_path):
+            print(f"Weights already downloaded at {weights_path}")
+        else:
+            print(f"Downloading weights from {doi}...")
+            download_file_with_progress(weight_url, weights_path, desc="Weights")
+            print(f"Downloaded weights at {weights_path}")
 
-    if os.path.exists(OOD_path):
-        print(f"OOD already downloaded at {OOD_path}")
-    else:
-        print(f"Downloading OOD detector from {doi}...")
-        download_file_with_progress(OOD_url, OOD_path, desc="OOD detector")
-        print(f"Downloaded OOD detector at {OOD_path}")
+        if os.path.exists(OOD_path):
+            print(f"OOD already downloaded at {OOD_path}")
+        else:
+            print(f"Downloading OOD detector from {doi}...")
+            download_file_with_progress(OOD_url, OOD_path, desc="OOD detector")
+            print(f"Downloaded OOD detector at {OOD_path}")
 
     print(f"Loading weights and OOD detector...")
 
@@ -75,6 +83,13 @@ def model_selector(select_pretrained="rep1"):
     model_torch.load_state_dict(state["model_state_dict"])
 
     print(f"Model weigths successfully loaded...")
-    with open(OOD_path, "rb") as f:
-        ood_KNN = pkl.load(f)
-    return model_torch.to(device), ood_KNN
+    if with_OOD:
+        with open(OOD_path, "rb") as f:
+            ood_KNN = pkl.load(f)
+        return model_torch.to(device), ood_KNN
+    return model_torch.to(device)
+
+
+def free_gpu_memory():
+    torch.cuda.empty_cache()
+    gc.collect()

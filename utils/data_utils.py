@@ -91,3 +91,33 @@ def obtain_rep(trace_data, type_rep):
         image = np.concatenate([spectrum_img, img_RGB], axis=1)
         image = np.concatenate([image, sígnal_plot], axis=0)
         return image
+
+
+import torch
+import torchvision.transforms as transforms
+from torch.utils.data import Dataset
+
+
+transform_ = transforms.Compose(
+    [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+)
+
+
+class CustomImageDataset(Dataset):
+    def __init__(self, data_dir_df, rep_type, transform=transform_):
+        self.data_info = data_dir_df
+        self.transform = transform
+        self.rep_type = rep_type
+
+    def __len__(self):
+        return len(self.data_info["event_class"])
+
+    def __getitem__(self, idx):
+        label = self.data_info.loc[idx]["event_class"]
+        path = self.data_info.loc[idx]["path"]
+        event_name = self.data_info.loc[idx]["event_name"]
+        trace_data = np.load(path)
+        image = obtain_rep(trace_data, self.rep_type)
+        image = self.transform(image.copy())
+        # return image, torch.Tensor([label])
+        return image, torch.Tensor(np.array(label)).type(torch.LongTensor), event_name
