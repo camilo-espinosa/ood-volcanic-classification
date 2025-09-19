@@ -2,7 +2,7 @@
 
 This repository contains the code implementation for the article:
 
-**"Volcano Seismic Event Recognition and OOD Detection using Multi-Representation Deep Learning: Insights from Nevados del Chillán,"**  
+[**"Volcano Seismic Event Recognition and OOD Detection using Multi-Representation Deep Learning: Insights from Nevados del Chillán"**](https://doi.org/10.1016/j.jvolgeores.2025.108406)
 
 ## Overview
 
